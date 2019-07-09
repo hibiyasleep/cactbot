@@ -277,9 +277,28 @@ These are what this document calls "game log lines".
 There is a two byte log type and then a string.
 Because these are not often used for triggers
 (other than `0839` messages),
+
 the full set of LogTypes is not well-documented.
 
 (Pull requests welcome!)
+
+Index | Example    | Explaination
+------+------------+--------------
+0     | 0020       | Message type (in 4-digit hex)
+1     | I'm Sleepy | Sender (empty if doesn't exist, **contains user tag except yours**)
+2     | hi         | Message body
+
+Type        | Explaination       | Example (from in-game)
+------------+--------------------+------------------------
+000e        | Party              | `(Cloud Strife) Where is everybody?`
+0010 - 0017 | Linkshell 1 from 8 | `[1]<Cloud Strife> Do I have time to grab my gunblade?`
+0018        | Free Company       | `[FC]<Cloud Strife> Can I invite my friend, Zack?`
+0038        | Echo               | `Echo`
+0044        | NPC Dialouge       | `Baderon: Now off with ye. I got casks to tap.`
+
+Game data `LogFilter`, `LogMessage` and `LogKind` are associcated with this.
+
+(To be filled with logfile inspection.)
 
 #### Don't Write Triggers Against Game Log Lines
 
@@ -295,6 +314,26 @@ Prefer using `1A` "gains the effect" message instead of `00` "suffers the effect
 
 At the moment, there are some cases where you must use game log lines,
 such as sealing and unsealing of zones, or boss rp text for phase transitions.
+
+#### Message Tags
+
+**WARNING:** See above and don't make trigger on message tag. **all of tags are broken** in log, since it's encoded into UTF-8 once! You'll get lot of `ef bf bd`, this makes tag unparseable, or even worse unstripable.
+
+Message and Sender may contain tags, which constructs all kind of clickable messages.
+
+Tags are consist of 'open' and 'close' tag, both tag starts with `02` or `02 27`, ends with `03`. Looks similar with XML.
+
+For example, when got an achivement `\ud63c\ub3c8\uc758 \uc18c\uc6a9\ub3cc\uc774`:
+
+```
+02 27 1f 06 �  03 �  01 01 �  17
+ed98bc eb8f88 ec9d98 20 ec868c ec9aa9 eb8f8c ec9db4
+03 02 13 06 �  �  �  7b 1a 03
+ee82bb
+02 13 02 �  03
+ed98bc eb8f88 ec9d98 20 ec868c ec9aa9 eb8f8c ec9db4
+02 27 07 �  01 01 01 �  01 03
+```
 
 ### 01: ChangeZone
 
